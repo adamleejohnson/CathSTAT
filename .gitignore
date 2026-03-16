@@ -3,6 +3,7 @@ node_modules/
 
 # Nuxt build output
 .nuxt/
+.output/
 
 # Static generation output
 dist/

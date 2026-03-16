@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   ssr: false,
   app: {
+    buildAssetsDir: '/assets/',
     head: {
       title: 'Cath Lab Emergency — Cognitive Aid',
       meta: [
