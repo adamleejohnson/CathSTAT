@@ -23,7 +23,7 @@ export default defineNuxtConfig({
   },
   nitro: {
     output: {
-      publicDir: './.output/public',
+      publicDir: './output/public',
     },
   },
 })

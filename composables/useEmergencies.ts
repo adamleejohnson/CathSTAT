@@ -79,8 +79,8 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Definitive Treatment',
         items: [
-          { id: 'cp-11', text: 'Covered stent — order stat (e.g. GRAFTMASTER / PK Papyrus)', critical: true },
-          { id: 'cp-12', text: 'Pericardiocentesis — if tamponade develops', subtext: 'Have echo, long needle, and drainage kit ready' },
+          { id: 'cp-11', text: 'Covered stent — order stat (e.g. GRAFTMASTER / PK Papyrus)', critical: false },
+          { id: 'cp-12', text: 'Pericardiocentesis — if tamponade develops'},
           { id: 'cp-13', text: 'Balloon re-inflation while awaiting covered stent' },
           { id: 'cp-14', text: 'CT surgery notification — early if tamponade or large perforation', critical: true },
           { id: 'cp-15', text: 'Consider emergent CABG if not controllable percutaneously' },

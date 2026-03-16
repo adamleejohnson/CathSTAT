@@ -11,30 +11,33 @@ const emit = defineEmits<{
   toggleDark: []
 }>()
 
-const bg = computed(() => props.isDark ? 'bg-[hsl(222,47%,8%)]' : 'bg-[#eef0f3]')
-const headerText = computed(() => props.isDark ? 'text-blue-400/80' : 'text-blue-600/80')
-const subText = computed(() => props.isDark ? 'text-white/35' : 'text-gray-400')
+const bg = computed(() => props.isDark ? 'bg-[hsl(222,47%,8%)]' : 'bg-[#f3f4f6]')
+const headerText = computed(() => props.isDark ? 'text-zinc-100' : 'text-zinc-900')
+const subText = computed(() => props.isDark ? 'text-white/45' : 'text-zinc-500')
+const heartStroke = computed(() => props.isDark ? 'rgba(255,255,255,0.82)' : 'rgb(24 24 27)')
+const waveStroke = computed(() => props.isDark ? 'rgba(255,255,255,0.42)' : 'rgb(113 113 122)')
 const toggleCls = computed(() =>
   props.isDark
     ? 'text-white/40 hover:text-white/70 hover:bg-white/8 border-white/10'
     : 'text-gray-400 hover:text-gray-600 hover:bg-black/5 border-gray-200'
 )
-const footerCls = computed(() => props.isDark ? 'text-white/15 hover:text-white/30' : 'text-gray-300 hover:text-gray-400')
 const comingSoonBorder = computed(() => props.isDark ? 'border-white/10' : 'border-gray-200')
 const comingSoonText = computed(() => props.isDark ? 'text-white/25' : 'text-gray-400')
 const comingSoonSub = computed(() => props.isDark ? 'text-white/15' : 'text-gray-300')
 
-function cardBg(em: typeof EMERGENCIES[0]) {
-  return props.isDark ? em.darkColor : em.lightColor
+function cardBg(_em: typeof EMERGENCIES[0]) {
+  return props.isDark
+    ? 'bg-zinc-900 shadow-[0_18px_45px_-28px_rgba(0,0,0,0.85)] hover:bg-zinc-800'
+    : 'bg-white shadow-[0_18px_40px_-30px_rgba(15,23,42,0.28)] hover:bg-zinc-50'
 }
-function cardBorder(em: typeof EMERGENCIES[0]) {
-  return props.isDark ? em.darkBorder : em.lightBorder
+function cardBorder(_em: typeof EMERGENCIES[0]) {
+  return props.isDark ? 'border-white/10 hover:border-white/20' : 'border-zinc-200 hover:border-zinc-300'
 }
-function accentText(em: typeof EMERGENCIES[0]) {
-  return props.isDark ? em.darkAccent : em.lightAccent
+function accentText(_em: typeof EMERGENCIES[0]) {
+  return props.isDark ? 'text-white' : 'text-zinc-900'
 }
 const chevronCls = computed(() =>
-  props.isDark ? 'text-white/30 group-hover:text-white/60' : 'text-gray-400 group-hover:text-gray-600'
+  props.isDark ? 'text-white/35 group-hover:text-white/70' : 'text-zinc-400 group-hover:text-zinc-700'
 )
 </script>
 
@@ -61,23 +64,23 @@ const chevronCls = computed(() =>
           <svg aria-label="Cath Lab Emergency" viewBox="0 0 64 64" class="w-12 h-12" fill="none">
             <path
               d="M32 52 C32 52 8 36 8 22 C8 15 13 10 20 10 C24.5 10 28.5 12.5 32 16 C35.5 12.5 39.5 10 44 10 C51 10 56 15 56 22 C56 36 32 52 32 52Z"
-              stroke="hsl(210,100%,55%)"
+              :stroke="heartStroke"
               stroke-width="2.5"
               stroke-linejoin="round"
             />
             <polyline
               points="16,32 22,32 25,25 28,39 31,28 34,32 40,32 43,27 46,32 48,32"
-              stroke="hsl(0,80%,58%)"
+              :stroke="waveStroke"
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
             />
           </svg>
         </div>
-        <div :class="['text-xs font-semibold uppercase tracking-[0.25em] mb-1', headerText]">
-          Cath Lab Emergency
+        <div :class="['landing-brand text-5xl sm:text-6xl md:text-7xl mb-2', headerText]">
+          CathSTAT
         </div>
-        <p :class="['text-sm', subText]">Select an emergency type</p>
+        <p :class="['text-sm uppercase tracking-[0.24em]', subText]">Select an emergency type</p>
       </div>
 
       <!-- Cards -->
@@ -86,7 +89,7 @@ const chevronCls = computed(() =>
           v-for="em in EMERGENCIES"
           :key="em.id"
           :class="[
-            'w-full rounded-2xl px-7 py-6 text-left flex items-center gap-4',
+            'w-full rounded-2xl px-7 py-6 text-left flex items-center gap-3',
             'border-2 transition-all duration-150',
             'hover:scale-[1.02] hover:brightness-[1.03] active:scale-[0.99]',
             'group cursor-pointer',
@@ -95,9 +98,8 @@ const chevronCls = computed(() =>
           :data-testid="`select-emergency-${em.id}`"
           @click="emit('select', em.id)"
         >
-          <span class="text-3xl leading-none flex-shrink-0" aria-hidden="true">{{ em.icon }}</span>
           <div class="flex-1 min-w-0">
-            <div :class="['text-xl font-bold leading-tight', accentText(em)]">
+            <div :class="['text-xl font-medium tracking-[0.01em] leading-tight', accentText(em)]">
               {{ em.name }}
             </div>
           </div>
@@ -110,21 +112,10 @@ const chevronCls = computed(() =>
 
         <!-- Coming soon -->
         <div :class="['border-2 border-dashed rounded-2xl px-7 py-5 text-center', comingSoonBorder]">
-          <div :class="['text-sm font-medium mb-0.5', comingSoonText]">More emergencies coming soon</div>
-          <div :class="['text-xs', comingSoonSub]">Cardiac Arrest · STEMI · Tamponade · Vascular Complications</div>
+          <div :class="['text-sm font-medium mb-0.5', comingSoonText]">More coming soon</div>
+          <div :class="['text-xs', comingSoonSub]">Cardiac Arrest · Vascular Complications · No Re-flow</div>
         </div>
       </div>
     </div>
-
-    <footer class="text-center py-4 text-xs flex-shrink-0">
-      <a
-        href="https://www.perplexity.ai/computer"
-        target="_blank"
-        rel="noopener noreferrer"
-        :class="['transition-colors', footerCls]"
-      >
-        Created with Perplexity Computer
-      </a>
-    </footer>
   </div>
 </template>
