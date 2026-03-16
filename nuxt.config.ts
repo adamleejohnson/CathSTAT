@@ -9,7 +9,6 @@ export default defineNuxtConfig({
     payloadExtraction: false,
   },
   app: {
-    buildAssetsDir: '/assets/',
     head: {
       title: 'Cath Lab Emergency — Cognitive Aid',
       meta: [
