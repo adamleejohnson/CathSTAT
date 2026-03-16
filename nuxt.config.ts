@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss'],
   css: ['~/assets/css/main.css'],
   ssr: false,
+  experimental: {
+    payloadExtraction: false,
+  },
   app: {
     buildAssetsDir: '/assets/',
     head: {
