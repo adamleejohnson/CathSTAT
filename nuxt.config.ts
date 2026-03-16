@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     payloadExtraction: false,
   },
   app: {
+    baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
       title: 'Cath Lab Emergency — Cognitive Aid',
       meta: [
