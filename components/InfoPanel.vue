@@ -13,22 +13,22 @@ const emit = defineEmits<{
 }>()
 
 const bg = computed(() =>
-  props.isDark ? 'bg-[hsl(222,40%,10%)] border-[hsl(220,20%,22%)]' : 'bg-white border-gray-200'
+  props.isDark ? 'bg-[hsl(216,24%,10%)] border-slate-700/80' : 'bg-slate-50 border-slate-300'
 )
-const textCls = computed(() => props.isDark ? 'text-white' : 'text-gray-900')
-const labelCls = computed(() => props.isDark ? 'text-white/50' : 'text-gray-500')
+const textCls = computed(() => props.isDark ? 'text-slate-100' : 'text-slate-900')
+const labelCls = computed(() => props.isDark ? 'text-slate-400' : 'text-slate-600')
 const inputCls = computed(() =>
   props.isDark
-    ? 'bg-white/5 border-white/10 text-white placeholder-white/25 focus:border-blue-500/60'
-    : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-blue-400'
+    ? 'bg-slate-900 border-slate-600 text-slate-100 placeholder-slate-500 focus:border-slate-400'
+    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-slate-500'
 )
 const btnCls = computed(() =>
-  props.isDark ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-700'
+  props.isDark ? 'bg-slate-100 text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-slate-700'
 )
 const closeCls = computed(() =>
   props.isDark
-    ? 'text-white/60 hover:text-white hover:bg-white/10'
-    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+    ? 'text-slate-300 hover:text-white hover:bg-slate-700/70 border-slate-600'
+    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 border-slate-300'
 )
 
 const fields = [
@@ -44,13 +44,13 @@ const fields = [
     @click="emit('close')"
   >
     <div
-      :class="[bg, 'border rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl']"
+      :class="[bg, 'border rounded-none p-6 w-full max-w-lg mx-4']"
       @click.stop
     >
-      <div class="flex items-center justify-between mb-5">
-        <h2 :class="['text-lg font-semibold', textCls]">Session Info</h2>
+      <div class="flex items-center justify-between mb-5 pb-3 border-b" :class="props.isDark ? 'border-slate-700' : 'border-slate-300'">
+        <h2 :class="['text-lg font-bold tracking-[0.02em]', textCls]">Session Info</h2>
         <button
-          :class="['p-2 rounded-lg transition-colors', closeCls]"
+          :class="['p-2 border rounded-none transition-colors', closeCls]"
           data-testid="close-info-panel"
           @click="emit('close')"
         >
@@ -67,7 +67,7 @@ const fields = [
             type="text"
             :value="session[field.key]"
             :placeholder="field.placeholder"
-            :class="['w-full border rounded-xl px-4 py-3 text-base focus:outline-none transition-all', inputCls]"
+            :class="['w-full border rounded-none px-4 py-3 text-base focus:outline-none transition-colors', inputCls]"
             :data-testid="`input-${field.key}`"
             @input="emit('update', { [field.key]: ($event.target as HTMLInputElement).value })"
           />
@@ -79,7 +79,7 @@ const fields = [
             :value="session.notes"
             placeholder="Clinical notes, interventions, timing..."
             rows="4"
-            :class="['w-full border rounded-xl px-4 py-3 text-base focus:outline-none transition-all resize-none', inputCls]"
+            :class="['w-full border rounded-none px-4 py-3 text-base focus:outline-none transition-colors resize-none', inputCls]"
             data-testid="input-notes"
             @input="emit('update', { notes: ($event.target as HTMLTextAreaElement).value })"
           />
@@ -87,7 +87,7 @@ const fields = [
       </div>
 
       <button
-        :class="['mt-5 w-full text-white font-semibold text-base py-3 rounded-xl transition-colors', btnCls]"
+        :class="['mt-5 w-full border font-semibold text-base py-3 rounded-none transition-colors border-transparent', btnCls]"
         data-testid="save-info"
         @click="emit('close')"
       >

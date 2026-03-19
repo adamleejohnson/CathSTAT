@@ -4,7 +4,6 @@ export interface ChecklistItem {
   id: string
   text: string
   subtext?: string
-  critical?: boolean
 }
 
 export interface EmergencySection {
@@ -59,10 +58,10 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Immediate Actions',
         items: [
-          { id: 'cp-1', text: 'Recognize perforation — contrast extravasation on cine', critical: true },
-          { id: 'cp-2', text: 'Call for HELP — announce the emergency to the room', critical: true },
-          { id: 'cp-3', text: 'Reverse anticoagulation — Protamine for heparin (1mg per 100U)', critical: true },
-          { id: 'cp-4', text: 'Balloon inflation — inflate at perforation site to tamponade', subtext: 'Low-pressure prolonged inflation (>5 min)', critical: true },
+          { id: 'cp-1', text: 'Recognize perforation — contrast extravasation on cine' },
+          { id: 'cp-2', text: 'Call for HELP — announce the emergency to the room' },
+          { id: 'cp-3', text: 'Reverse anticoagulation — Protamine for heparin (1mg per 100U)' },
+          { id: 'cp-4', text: 'Balloon inflation — inflate at perforation site to tamponade', subtext: 'Low-pressure prolonged inflation (>5 min)' },
           { id: 'cp-5', text: 'Stop GPIIb/IIIa inhibitor infusion if running' },
           { id: 'cp-6', text: 'Maintain wire position across perforation site' },
         ],
@@ -79,10 +78,10 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Definitive Treatment',
         items: [
-          { id: 'cp-11', text: 'Covered stent — order stat (e.g. GRAFTMASTER / PK Papyrus)', critical: false },
+          { id: 'cp-11', text: 'Covered stent — order stat (e.g. GRAFTMASTER / PK Papyrus)' },
           { id: 'cp-12', text: 'Pericardiocentesis — if tamponade develops'},
           { id: 'cp-13', text: 'Balloon re-inflation while awaiting covered stent' },
-          { id: 'cp-14', text: 'CT surgery notification — early if tamponade or large perforation', critical: true },
+          { id: 'cp-14', text: 'CT surgery notification — early if tamponade or large perforation' },
           { id: 'cp-15', text: 'Consider emergent CABG if not controllable percutaneously' },
         ],
       },
@@ -112,9 +111,9 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Recognition & Immediate Actions',
         items: [
-          { id: 'sh-1', text: 'Confirm shock — SBP <90 mmHg or MAP <65 mmHg >30 min', critical: true },
-          { id: 'sh-2', text: 'Call for HELP — announce to the room, activate shock protocol', critical: true },
-          { id: 'sh-3', text: 'IV access — large-bore (×2), draw labs (CBC, CMP, troponin, BNP, lactate)', critical: true },
+          { id: 'sh-1', text: 'Confirm shock — SBP <90 mmHg or MAP <65 mmHg >30 min' },
+          { id: 'sh-2', text: 'Call for HELP — announce to the room, activate shock protocol' },
+          { id: 'sh-3', text: 'IV access — large-bore (×2), draw labs (CBC, CMP, troponin, BNP, lactate)' },
           { id: 'sh-4', text: '12-lead ECG — identify STEMI / ischemia requiring emergent revascularization' },
           { id: 'sh-5', text: 'Bedside echo — assess LV/RV function, effusion, valvular cause' },
         ],
@@ -122,7 +121,7 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Hemodynamic Support',
         items: [
-          { id: 'sh-6', text: 'Vasopressors — Norepinephrine 0.1–0.3 mcg/kg/min (first-line)', critical: true },
+          { id: 'sh-6', text: 'Vasopressors — Norepinephrine 0.1–0.3 mcg/kg/min (first-line)' },
           { id: 'sh-7', text: 'Inotrope — Dobutamine 2.5–10 mcg/kg/min if low CO/CI' },
           { id: 'sh-8', text: 'Judicious fluids — 250 mL bolus, reassess; avoid volume overload' },
           { id: 'sh-9', text: 'Foley catheter — monitor urine output (goal >0.5 mL/kg/hr)' },
@@ -132,8 +131,8 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Mechanical Circulatory Support',
         items: [
-          { id: 'sh-11', text: 'IABP — consider for hemodynamic stabilization pre-PCI', critical: true },
-          { id: 'sh-12', text: 'Impella CP / 5.0 — consider for severe CS (CI <2.2, refractory)', critical: true },
+          { id: 'sh-11', text: 'IABP — consider for hemodynamic stabilization pre-PCI' },
+          { id: 'sh-12', text: 'Impella CP / 5.0 — consider for severe CS (CI <2.2, refractory)' },
           { id: 'sh-13', text: 'ECMO — consider for refractory shock / cardiac arrest' },
           { id: 'sh-14', text: 'Right-heart catheterization — hemodynamic guidance (Swan-Ganz)' },
         ],
@@ -141,7 +140,7 @@ export const EMERGENCIES: EmergencyType[] = [
       {
         title: 'Revascularization & Escalation',
         items: [
-          { id: 'sh-15', text: 'Emergent PCI — target culprit vessel; avoid multi-vessel PCI acutely', critical: true },
+          { id: 'sh-15', text: 'Emergent PCI — target culprit vessel; avoid multi-vessel PCI acutely' },
           { id: 'sh-16', text: 'CT surgery notification — if surgical candidate or mechanical complication' },
           { id: 'sh-17', text: 'Correct reversible causes — arrhythmia, tamponade, tension pneumo' },
           { id: 'sh-18', text: 'Intubation — if respiratory failure or reduced consciousness' },

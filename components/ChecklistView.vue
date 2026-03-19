@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
   Maximize2, Minimize2, FileText, RotateCcw, Download,
-  ChevronLeft, CheckCircle2, Circle, AlertTriangle,
+  ChevronLeft, CheckSquare, Square,
   Play, Pause, StopCircle, Moon, Sun,
 } from 'lucide-vue-next'
 import type { EmergencyType, SessionState } from '~/composables/useEmergencies'
@@ -32,74 +32,78 @@ const emit = defineEmits<{
 const allItems = computed(() => props.emergency.sections.flatMap(s => s.items))
 const totalItems = computed(() => allItems.value.length)
 const checkedCount = computed(() => allItems.value.filter(i => props.session.checkedItems.has(i.id)).length)
-const progress = computed(() => totalItems.value > 0 ? (checkedCount.value / totalItems.value) * 100 : 0)
-const isComplete = computed(() => checkedCount.value === totalItems.value && totalItems.value > 0)
 
 const timerColor = computed(() => {
   if (props.isDark) {
-    return props.elapsed > 20 * 60 * 1000 ? 'text-red-400'
-      : props.elapsed > 10 * 60 * 1000 ? 'text-amber-400' : 'text-white'
+    return props.elapsed > 20 * 60 * 1000 ? 'text-red-300'
+      : props.elapsed > 10 * 60 * 1000 ? 'text-amber-300' : 'text-zinc-200'
   }
-  return props.elapsed > 20 * 60 * 1000 ? 'text-red-600'
-    : props.elapsed > 10 * 60 * 1000 ? 'text-amber-600' : 'text-gray-800'
+  return props.elapsed > 20 * 60 * 1000 ? 'text-red-700'
+    : props.elapsed > 10 * 60 * 1000 ? 'text-amber-700' : 'text-slate-900'
 })
 
-const pageBg = computed(() => props.isDark ? 'bg-[hsl(222,47%,8%)]' : 'bg-[#eef0f3]')
-const topBarBg = computed(() =>
-  props.isDark ? 'bg-[hsl(222,40%,9%)] border-white/8' : 'bg-[#e4e6ea] border-gray-200'
-)
-const bottomBarBg = computed(() =>
-  props.isDark ? 'bg-[hsl(222,40%,9%)] border-white/8' : 'bg-[#e4e6ea] border-gray-200'
-)
-const progressTrack = computed(() => props.isDark ? 'bg-white/5' : 'bg-gray-200')
+const pageBg = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#F5F3EE]')
+const topBarBg = computed(() => props.isDark ? 'border-zinc-600 bg-zinc-800' : 'border-[#D2D4D6] bg-[#f8f7f4]')
+const bottomBarBg = computed(() => props.isDark ? 'border-zinc-600 bg-zinc-800' : 'border-[#D2D4D6] bg-[#f8f7f4]')
 const btnGhost = computed(() =>
   props.isDark
-    ? 'text-white/50 hover:text-white hover:bg-white/10'
-    : 'text-gray-400 hover:text-gray-700 hover:bg-black/8'
+    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 border-zinc-500'
+    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 border-[#D2D4D6]'
 )
 const backCls = computed(() =>
   props.isDark
-    ? 'text-white/50 hover:text-white hover:bg-white/8'
-    : 'text-gray-500 hover:text-gray-800 hover:bg-black/8'
+    ? 'text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 border-zinc-500'
+    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border-[#D2D4D6]'
 )
-const emergencyNameCls = computed(() =>
-  props.isDark ? props.emergency.darkAccent : props.emergency.lightAccent
-)
-const patientInfoCls = computed(() => props.isDark ? 'text-white/30' : 'text-gray-400')
-const statusTextCls = computed(() => props.isDark ? 'text-white/25' : 'text-gray-400')
-const sectionHeaderCls = computed(() =>
-  props.isDark ? 'text-white/45 border-white/10' : 'text-gray-400 border-gray-200'
-)
-const sectionCountCls = computed(() => props.isDark ? 'text-white/30' : 'text-gray-400')
+const emergencyNameCls = computed(() => props.isDark ? 'text-zinc-200' : 'text-slate-900')
+const patientInfoCls = computed(() => props.isDark ? 'text-zinc-400' : 'text-slate-500')
+const statusTextCls = computed(() => props.isDark ? 'text-zinc-400' : 'text-slate-600')
+const sectionCountCls = computed(() => props.isDark ? 'text-[11px] text-zinc-500 font-normal' : 'text-[11px] text-slate-400 font-normal')
 
-const completionBg = computed(() =>
-  props.isDark ? 'bg-green-950/40 border-green-700/40' : 'bg-green-50 border-green-200'
-)
-const completionText = computed(() => props.isDark ? 'text-white' : 'text-gray-800')
-const completionSub = computed(() => props.isDark ? 'text-white/40' : 'text-gray-500')
-
-function itemCls(checked: boolean, critical: boolean | undefined): string {
-  if (checked) {
-    return props.isDark
-      ? 'bg-green-950/30 border-green-700/25'
-      : 'bg-green-50 border-green-200'
+function sectionAccentCls(title: string): string {
+  const lower = title.toLowerCase()
+  if (lower.includes('immediate') || lower.includes('recognition') || lower.includes('escalation')) {
+    return props.isDark ? 'border-l-[#B68686]' : 'border-l-[#B85A5A]'
   }
-  if (critical) {
-    return props.isDark
-      ? 'bg-red-950/25 border-red-700/25 hover:bg-red-950/45 hover:border-red-600/45'
-      : 'bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300'
+  if (lower.includes('definitive') || lower.includes('treatment') || lower.includes('mechanical')) {
+    return props.isDark ? 'border-l-[#8EAD95]' : 'border-l-[#3C6F5C]'
   }
-  return props.isDark
-    ? 'bg-white/[0.025] border-white/8 hover:bg-white/[0.055] hover:border-white/14'
-    : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+  if (lower.includes('hemodynamic')) {
+    return props.isDark ? 'border-l-[#8FA7B8]' : 'border-l-[#3A4B6C]'
+  }
+  return props.isDark ? 'border-l-slate-500' : 'border-l-slate-700'
 }
 
-function itemTextCls(checked: boolean, critical: boolean | undefined): string {
-  if (checked) return props.isDark ? 'line-through text-white/30' : 'line-through text-gray-400'
+function itemRowCls(): string {
   return props.isDark
-    ? (critical ? 'text-white' : 'text-white/85')
-    : (critical ? 'text-gray-900' : 'text-gray-700')
+    ? 'flex items-start gap-3 px-1 py-2 hover:bg-zinc-700 transition-colors'
+    : 'flex items-start gap-3 px-1 py-2 hover:bg-slate-50 transition-colors'
 }
+
+const bodySurfaceCls = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#F5F3EE]')
+const cardSurfaceCls = computed(() =>
+  props.isDark
+    ? 'bg-zinc-800 border-zinc-600 shadow-[0_1px_0_rgba(0,0,0,0.35)]'
+    : 'bg-white border-[#D2D4D6]'
+)
+const sectionTitleCls = computed(() =>
+  props.isDark
+    ? 'text-xs lg:text-sm tracking-[0.22em] font-semibold text-zinc-200 uppercase'
+    : 'text-xs lg:text-sm tracking-[0.22em] font-semibold text-slate-900 uppercase'
+)
+const sectionRuleCls = computed(() => props.isDark ? 'border-zinc-600' : 'border-slate-300')
+const itemTextCls = computed(() =>
+  props.isDark
+    ? {
+      checked: 'text-zinc-500 line-through decoration-zinc-500/70 decoration-[1px]',
+      unchecked: 'text-zinc-100',
+    }
+    : {
+      checked: 'text-slate-400 line-through decoration-slate-400/70 decoration-[1px]',
+      unchecked: 'text-slate-900',
+    }
+)
+const itemSubtextCls = computed(() => props.isDark ? 'text-xs lg:text-sm text-zinc-500 mt-0.5' : 'text-xs lg:text-sm text-slate-500 mt-0.5')
 
 const todayStr = computed(() =>
   new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -107,12 +111,12 @@ const todayStr = computed(() =>
 </script>
 
 <template>
-  <div :class="[pageBg, 'h-screen flex flex-col overflow-hidden']">
+  <div :class="[pageBg, 'min-h-screen h-screen flex flex-col overflow-hidden']">
 
     <!-- Top bar -->
-    <div :class="['flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 border-b', topBarBg]">
+    <div :class="['flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-3 border-b', topBarBg]">
       <button
-        :class="['flex items-center gap-1 text-sm font-medium px-2 py-1.5 rounded-lg transition-colors flex-shrink-0', backCls]"
+        :class="['flex items-center gap-1 text-sm font-semibold px-2.5 py-1.5 border rounded-none transition-colors flex-shrink-0', backCls]"
         data-testid="btn-back"
         @click="emit('back')"
       >
@@ -133,14 +137,14 @@ const todayStr = computed(() =>
       <!-- Timer -->
       <div class="flex items-center gap-1.5 flex-shrink-0">
         <span
-          :class="['font-mono text-lg font-bold tabular-nums leading-none', timerColor]"
+          :class="['font-mono text-lg font-bold tabular-nums leading-none tracking-tight', timerColor]"
           data-testid="timer-display"
         >
           {{ formatDuration(elapsed) }}
         </span>
         <button
           v-if="!timerRunning"
-          class="p-1.5 rounded-lg bg-green-500/20 hover:bg-green-500/35 text-green-500 transition-colors"
+          class="p-1.5 border rounded-md bg-emerald-50 border-emerald-300 hover:bg-emerald-100 text-emerald-800 transition-colors"
           title="Start"
           data-testid="btn-timer-start"
           @click="emit('startTimer')"
@@ -149,7 +153,7 @@ const todayStr = computed(() =>
         </button>
         <button
           v-else
-          class="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-500 transition-colors"
+          class="p-1.5 border rounded-md bg-amber-50 border-amber-300 hover:bg-amber-100 text-amber-800 transition-colors"
           title="Pause"
           data-testid="btn-timer-pause"
           @click="emit('pauseTimer')"
@@ -157,7 +161,7 @@ const todayStr = computed(() =>
           <Pause :size="14" />
         </button>
         <button
-          :class="['p-1.5 rounded-lg transition-colors', btnGhost]"
+          :class="['p-1.5 border rounded-none transition-colors', btnGhost]"
           title="Reset timer"
           data-testid="btn-timer-reset"
           @click="emit('resetTimer')"
@@ -169,7 +173,7 @@ const todayStr = computed(() =>
       <!-- Action buttons -->
       <div class="flex items-center gap-0.5 flex-shrink-0">
         <button
-          :class="['p-2 rounded-lg transition-colors', btnGhost]"
+          :class="['p-2 border rounded-none transition-colors', btnGhost]"
           title="Session info"
           data-testid="btn-open-info"
           @click="emit('openInfo')"
@@ -177,7 +181,7 @@ const todayStr = computed(() =>
           <FileText :size="16" />
         </button>
         <button
-          :class="['p-2 rounded-lg transition-colors', btnGhost]"
+          :class="['p-2 border rounded-none transition-colors', btnGhost]"
           title="Export log"
           data-testid="btn-export"
           @click="emit('export')"
@@ -185,7 +189,7 @@ const todayStr = computed(() =>
           <Download :size="16" />
         </button>
         <button
-          :class="['p-2 rounded-lg transition-colors', btnGhost]"
+          :class="['p-2 border rounded-none transition-colors', btnGhost]"
           title="Reset checklist"
           data-testid="btn-reset"
           @click="emit('reset')"
@@ -193,7 +197,7 @@ const todayStr = computed(() =>
           <RotateCcw :size="16" />
         </button>
         <button
-          :class="['p-2 rounded-lg transition-colors', btnGhost]"
+          :class="['p-2 border rounded-none transition-colors', btnGhost]"
           title="Toggle theme"
           data-testid="btn-dark-toggle-checklist"
           @click="emit('toggleDark')"
@@ -202,7 +206,7 @@ const todayStr = computed(() =>
           <Moon v-else :size="16" />
         </button>
         <button
-          :class="['p-2 rounded-lg transition-colors', btnGhost]"
+          :class="['p-2 border rounded-none transition-colors', btnGhost]"
           title="Toggle fullscreen"
           data-testid="btn-fullscreen"
           @click="emit('toggleFullscreen')"
@@ -213,88 +217,77 @@ const todayStr = computed(() =>
       </div>
     </div>
 
-    <!-- Progress bar -->
-    <div :class="['flex-shrink-0 h-1', progressTrack]">
-      <div
-        class="h-full bg-gradient-to-r from-blue-500 to-green-500 transition-all duration-300"
-        :style="{ width: `${progress}%` }"
-      />
-    </div>
-
     <!-- Checklist body -->
-    <div class="flex-1 overflow-hidden px-3 sm:px-4 lg:px-5 py-3">
-
-      <!-- Completion state -->
-      <div v-if="isComplete" class="h-full flex items-center justify-center">
-        <div :class="['rounded-2xl border p-8 text-center max-w-sm', completionBg]">
-          <CheckCircle2
-            :size="40"
-            :class="[isDark ? 'text-green-400' : 'text-green-500', 'mx-auto mb-3']"
-          />
-          <div :class="['text-xl font-bold mb-1', completionText]">Checklist Complete</div>
-          <div :class="['text-sm', completionSub]">All {{ totalItems }} items have been addressed</div>
-        </div>
-      </div>
-
+    <div :class="['min-h-screen px-2 sm:px-3 md:px-4 xl:px-6 2xl:px-8 pb-6 md:pb-8 flex-1 overflow-y-auto', bodySurfaceCls]">
       <!-- 2×2 grid -->
       <div
-        v-else
-        class="h-full grid grid-cols-2 gap-3"
-        style="grid-template-rows: 1fr 1fr"
+        class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mt-3 md:mt-4 w-full"
       >
         <div
           v-for="section in emergency.sections"
           :key="section.title"
-          class="flex flex-col overflow-hidden min-h-0"
+          :class="[
+            'border rounded-none px-5 py-5 md:px-6 md:py-5 space-y-4 border-l-[3px]',
+            cardSurfaceCls,
+            sectionAccentCls(section.title),
+          ]"
         >
           <!-- Section header -->
-          <div :class="['flex items-center gap-2 mb-1.5 pb-1 border-b', sectionHeaderCls]">
-            <h2 :class="['text-[10px] font-bold uppercase tracking-[0.18em] flex-1', sectionHeaderCls]">
-              {{ section.title }}
-            </h2>
-            <span :class="['text-[10px] font-mono tabular-nums', sectionCountCls]">
-              {{ section.items.filter(i => session.checkedItems.has(i.id)).length }}/{{ section.items.length }}
-            </span>
+          <div>
+            <div class="flex items-baseline justify-between">
+              <div :class="sectionTitleCls">
+                {{ section.title }}
+              </div>
+              <span :class="['tabular-nums', sectionCountCls]">
+                {{ section.items.filter(i => session.checkedItems.has(i.id)).length }}/{{ section.items.length }}
+              </span>
+            </div>
+            <div :class="['border-b mt-2 mb-4', sectionRuleCls]" />
           </div>
 
           <!-- Items -->
-          <div class="flex flex-col gap-1 flex-1 min-h-0 overflow-hidden">
+          <div class="space-y-4">
             <button
               v-for="item in section.items"
               :key="item.id"
               :class="[
-                'flex-1 min-h-0',
-                'w-full text-left flex items-center gap-2.5 px-3 rounded-lg border',
-                'transition-all duration-100 active:scale-[0.99] cursor-pointer',
-                itemCls(session.checkedItems.has(item.id), item.critical),
+                'w-full text-left',
+                itemRowCls(),
               ]"
               :data-testid="`checklist-item-${item.id}`"
               @click="emit('toggleItem', item.id, item.text)"
             >
-              <div class="flex-shrink-0">
-                <CheckCircle2
+              <div
+                :class="[
+                  'h-4 w-4 lg:h-5 lg:w-5 mt-1 flex-shrink-0 flex items-center justify-center rounded-sm border',
+                  session.checkedItems.has(item.id)
+                    ? (isDark ? 'bg-zinc-700 border-zinc-500' : 'bg-slate-100 border-slate-300')
+                    : (isDark ? 'bg-zinc-800 border-zinc-400' : 'bg-white border-slate-500'),
+                ]"
+              >
+                <CheckSquare
                   v-if="session.checkedItems.has(item.id)"
-                  :size="18"
-                  :class="isDark ? 'text-green-400' : 'text-green-500'"
+                  :class="[isDark ? 'text-zinc-400' : 'text-slate-400', 'h-4 w-4 lg:h-5 lg:w-5']"
                 />
-                <AlertTriangle
-                  v-else-if="item.critical"
-                  :size="18"
-                  :class="isDark ? 'text-red-400/80' : 'text-red-400'"
-                />
-                <Circle
+                <Square
                   v-else
-                  :size="18"
-                  :class="isDark ? 'text-white/20' : 'text-gray-300'"
+                  :class="[isDark ? 'text-zinc-500' : 'text-slate-400', 'h-4 w-4 lg:h-5 lg:w-5']"
                 />
               </div>
               <div class="flex-1 min-w-0">
-                <div :class="['text-sm leading-snug font-medium truncate', itemTextCls(session.checkedItems.has(item.id), item.critical)]">
-                  {{ item.text }}
+                <div class="flex items-start gap-2">
+                  <div :class="[
+                    'text-sm md:text-[15px] lg:text-base leading-relaxed',
+                    session.checkedItems.has(item.id)
+                      ? itemTextCls.checked
+                      : itemTextCls.unchecked,
+                  ]">
+                    {{ item.text }}
+                  </div>
                 </div>
                 <div
                   v-if="item.subtext && !session.checkedItems.has(item.id)"
-                  :class="['text-xs truncate mt-0.5', isDark ? 'text-white/30' : 'text-gray-400']"
+                  :class="itemSubtextCls"
                 >
                   {{ item.subtext }}
                 </div>
@@ -306,7 +299,7 @@ const todayStr = computed(() =>
     </div>
 
     <!-- Status bar -->
-    <div :class="['flex-shrink-0 flex items-center justify-between px-4 py-1.5 border-t', bottomBarBg]">
+    <div :class="['flex-shrink-0 flex items-center justify-between px-4 py-2 border-t', bottomBarBg]">
       <div :class="['text-xs tabular-nums', statusTextCls]">
         {{ checkedCount }} / {{ totalItems }} completed
       </div>

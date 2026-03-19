@@ -12,7 +12,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        sans: ['Helvetica Neue', 'Roboto', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
       },
     },
   },

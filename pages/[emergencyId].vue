@@ -21,11 +21,45 @@ const route = useRoute()
 const router = useRouter()
 const { isDark, toggleDark } = useDarkModePreference()
 const isFullscreen = ref(false)
+const fullscreenHost = ref<HTMLElement | null>(null)
 const showInfo = ref(false)
 const showResetModal = ref(false)
 
-function toggleFullscreen() {
-  isFullscreen.value = !isFullscreen.value
+function syncFullscreenState() {
+  if (typeof document === 'undefined') return
+  const doc = document as Document & { webkitFullscreenElement?: Element | null }
+  isFullscreen.value = Boolean(doc.fullscreenElement || doc.webkitFullscreenElement)
+}
+
+async function toggleFullscreen() {
+  if (typeof document === 'undefined') return
+
+  const host = fullscreenHost.value ?? document.documentElement
+  const doc = document as Document & {
+    webkitExitFullscreen?: () => Promise<void> | void
+    webkitFullscreenElement?: Element | null
+  }
+  const el = host as HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void
+  }
+
+  try {
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen()
+      } else if (doc.webkitExitFullscreen) {
+        await doc.webkitExitFullscreen()
+      }
+    } else {
+      if (el.requestFullscreen) {
+        await el.requestFullscreen()
+      } else if (el.webkitRequestFullscreen) {
+        await el.webkitRequestFullscreen()
+      }
+    }
+  } catch {
+    // Ignore user-gesture and platform-specific fullscreen errors.
+  }
 }
 
 const emergencyId = computed(() =>
@@ -118,8 +152,18 @@ watch(emergencyId, (id) => {
   initializeSession(id)
 }, { immediate: true })
 
+onMounted(() => {
+  if (typeof document === 'undefined') return
+  document.addEventListener('fullscreenchange', syncFullscreenState)
+  document.addEventListener('webkitfullscreenchange', syncFullscreenState as EventListener)
+})
+
 onUnmounted(() => {
   if (rafId !== null) cancelAnimationFrame(rafId)
+  if (typeof document !== 'undefined') {
+    document.removeEventListener('fullscreenchange', syncFullscreenState)
+    document.removeEventListener('webkitfullscreenchange', syncFullscreenState as EventListener)
+  }
 })
 
 function handleToggleItem(id: string, text: string) {
@@ -171,8 +215,8 @@ function handleUpdateSession(updates: Partial<SessionState>) {
 
 <template>
   <div
+    ref="fullscreenHost"
     :class="isDark ? 'dark' : ''"
-    :style="isFullscreen ? { position: 'fixed', inset: '0', zIndex: '9999' } : {}"
   >
     <ChecklistView
       :emergency="emergency"

@@ -11,14 +11,14 @@ const emit = defineEmits<{
 }>()
 
 const bg = computed(() =>
-  props.isDark ? 'bg-[hsl(222,40%,10%)] border-red-800/40' : 'bg-white border-red-200'
+  props.isDark ? 'bg-[hsl(216,24%,10%)] border-red-700/70' : 'bg-slate-50 border-red-300'
 )
-const textCls = computed(() => props.isDark ? 'text-white' : 'text-gray-900')
-const subCls = computed(() => props.isDark ? 'text-white/40' : 'text-gray-500')
+const textCls = computed(() => props.isDark ? 'text-slate-100' : 'text-slate-900')
+const subCls = computed(() => props.isDark ? 'text-slate-300' : 'text-slate-600')
 const cancelCls = computed(() =>
   props.isDark
-    ? 'border-white/15 text-white/60 hover:text-white hover:bg-white/8'
-    : 'border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+    ? 'border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700/70'
+    : 'border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-100'
 )
 </script>
 
@@ -28,22 +28,22 @@ const cancelCls = computed(() =>
     @click="emit('cancel')"
   >
     <div
-      :class="[bg, 'border rounded-2xl p-7 w-full max-w-sm mx-4 shadow-2xl text-center']"
+      :class="[bg, 'border rounded-none p-7 w-full max-w-sm mx-4 text-center']"
       @click.stop
     >
-      <AlertTriangle :size="36" class="text-red-500 mx-auto mb-4" />
+      <AlertTriangle :size="34" class="text-red-600 mx-auto mb-4" />
       <h2 :class="['text-lg font-bold mb-2', textCls]">Reset the checklist?</h2>
       <p :class="['text-sm mb-6', subCls]">This action cannot be undone. Export the log first if needed.</p>
       <div class="flex gap-3">
         <button
-          :class="['flex-1 py-3 rounded-xl border transition-colors font-medium', cancelCls]"
+          :class="['flex-1 py-3 rounded-none border transition-colors font-semibold', cancelCls]"
           data-testid="reset-cancel"
           @click="emit('cancel')"
         >
           Cancel
         </button>
         <button
-          class="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors"
+          class="flex-1 py-3 rounded-none border border-red-700 bg-red-700 hover:bg-red-600 text-white font-semibold transition-colors"
           data-testid="reset-confirm"
           @click="emit('confirm')"
         >
