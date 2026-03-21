@@ -25,10 +25,59 @@ const fullscreenHost = ref<HTMLElement | null>(null)
 const showInfo = ref(false)
 const showResetModal = ref(false)
 
+const SESSION_STORAGE_PREFIX = 'cathstat:session:'
+
+interface PersistedSessionState {
+  emergencyId: string
+  startedAt: string | null
+  checkedItems: string[]
+  notes: string
+  patientMRN: string
+  patientName: string
+  staffNames: string
+  log: Array<{ timestamp: string, action: string, detail?: string }>
+  elapsed: number
+  timerRunning: boolean
+  showInfo: boolean
+}
+
+function storageKey(id: string): string {
+  return `${SESSION_STORAGE_PREFIX}${id}`
+}
+
 function syncFullscreenState() {
   if (typeof document === 'undefined') return
   const doc = document as Document & { webkitFullscreenElement?: Element | null }
   isFullscreen.value = Boolean(doc.fullscreenElement || doc.webkitFullscreenElement)
+}
+
+async function requestFullscreenForHost() {
+  if (typeof document === 'undefined') return
+
+  const host = fullscreenHost.value ?? document.documentElement
+  const doc = document as Document & {
+    webkitFullscreenElement?: Element | null
+  }
+  const el = host as HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void
+  }
+
+  if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+    syncFullscreenState()
+    return
+  }
+
+  try {
+    if (el.requestFullscreen) {
+      await el.requestFullscreen()
+    } else if (el.webkitRequestFullscreen) {
+      await el.webkitRequestFullscreen()
+    }
+  } catch {
+    // Ignore browser fullscreen permission/user-gesture errors.
+  } finally {
+    syncFullscreenState()
+  }
 }
 
 async function toggleFullscreen() {
@@ -51,11 +100,7 @@ async function toggleFullscreen() {
         await doc.webkitExitFullscreen()
       }
     } else {
-      if (el.requestFullscreen) {
-        await el.requestFullscreen()
-      } else if (el.webkitRequestFullscreen) {
-        await el.webkitRequestFullscreen()
-      }
+      await requestFullscreenForHost()
     }
   } catch {
     // Ignore user-gesture and platform-specific fullscreen errors.
@@ -94,6 +139,52 @@ const timerRunning = ref(false)
 let startTime: number | null = null
 let lastElapsed = 0
 let rafId: number | null = null
+let didHydrateFromStorage = false
+
+function saveSessionState(id: string) {
+  if (typeof window === 'undefined') return
+
+  const payload: PersistedSessionState = {
+    emergencyId: id,
+    startedAt: session.value.startedAt ? session.value.startedAt.toISOString() : null,
+    checkedItems: Array.from(session.value.checkedItems),
+    notes: session.value.notes,
+    patientMRN: session.value.patientMRN,
+    patientName: session.value.patientName,
+    staffNames: session.value.staffNames,
+    log: session.value.log.map(entry => ({
+      timestamp: entry.timestamp.toISOString(),
+      action: entry.action,
+      detail: entry.detail,
+    })),
+    elapsed: elapsed.value,
+    timerRunning: timerRunning.value,
+    showInfo: showInfo.value,
+  }
+
+  try {
+    window.sessionStorage.setItem(storageKey(id), JSON.stringify(payload))
+  } catch {
+    // Ignore storage quota and unavailable storage errors.
+  }
+}
+
+function loadSessionState(id: string): PersistedSessionState | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = window.sessionStorage.getItem(storageKey(id))
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as PersistedSessionState
+    if (!parsed || parsed.emergencyId !== id || !Array.isArray(parsed.checkedItems) || !Array.isArray(parsed.log)) {
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
 
 function tick() {
   if (startTime !== null) {
@@ -126,7 +217,46 @@ function resetTimer() {
   lastElapsed = 0
 }
 
+function applyPersistedState(id: string, persisted: PersistedSessionState): boolean {
+  const startedAt = persisted.startedAt ? new Date(persisted.startedAt) : null
+  const parsedLog: LogEntry[] = persisted.log
+    .map(entry => ({
+      timestamp: new Date(entry.timestamp),
+      action: entry.action,
+      detail: entry.detail,
+    }))
+    .filter(entry => !Number.isNaN(entry.timestamp.getTime()))
+
+  session.value = {
+    emergencyId: id,
+    startedAt: startedAt && !Number.isNaN(startedAt.getTime()) ? startedAt : null,
+    checkedItems: new Set<string>(persisted.checkedItems),
+    notes: persisted.notes ?? '',
+    patientMRN: persisted.patientMRN ?? '',
+    patientName: persisted.patientName ?? '',
+    staffNames: persisted.staffNames ?? '',
+    log: parsedLog,
+  }
+
+  pauseTimer()
+  elapsed.value = Math.max(0, persisted.elapsed ?? 0)
+  lastElapsed = elapsed.value
+  showInfo.value = Boolean(persisted.showInfo)
+  showResetModal.value = false
+
+  if (persisted.timerRunning) {
+    startTimer()
+  }
+
+  return true
+}
+
 function initializeSession(id: string) {
+  const persisted = loadSessionState(id)
+  if (persisted && applyPersistedState(id, persisted)) {
+    return
+  }
+
   const selectedEmergency = EMERGENCIES.find(em => em.id === id)
   const now = new Date()
 
@@ -149,13 +279,26 @@ function initializeSession(id: string) {
 
 watch(emergencyId, (id) => {
   if (!id) return
+  didHydrateFromStorage = true
   initializeSession(id)
 }, { immediate: true })
+
+watch(
+  [session, elapsed, timerRunning, showInfo, emergencyId],
+  ([, , , , id]) => {
+    if (!didHydrateFromStorage || !id) return
+    saveSessionState(id)
+  },
+  { deep: true },
+)
 
 onMounted(() => {
   if (typeof document === 'undefined') return
   document.addEventListener('fullscreenchange', syncFullscreenState)
   document.addEventListener('webkitfullscreenchange', syncFullscreenState as EventListener)
+
+  // Attempt to start in fullscreen when entering an emergency checklist.
+  void requestFullscreenForHost()
 })
 
 onUnmounted(() => {

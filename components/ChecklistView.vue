@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { computed, onUnmounted, ref } from 'vue'
 import {
   Maximize2, Minimize2, FileText, RotateCcw, Download,
-  ChevronLeft, CheckSquare, Square,
+  ChevronLeft,
+  Info,
   Play, Pause, StopCircle, Moon, Sun,
 } from 'lucide-vue-next'
-import type { EmergencyType, SessionState } from '~/composables/useEmergencies'
-import { formatDuration } from '~/composables/useEmergencies'
+import type { EmergencySection, EmergencyType, SessionState } from '../composables/useEmergencies'
+import { formatDuration } from '../composables/useEmergencies'
 
 const props = defineProps<{
   emergency: EmergencyType
@@ -42,7 +44,7 @@ const timerColor = computed(() => {
     : props.elapsed > 10 * 60 * 1000 ? 'text-amber-700' : 'text-slate-900'
 })
 
-const pageBg = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#F5F3EE]')
+const pageBg = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#E8E9E4]')
 const topBarBg = computed(() => props.isDark ? 'border-zinc-600 bg-zinc-800' : 'border-[#D2D4D6] bg-[#f8f7f4]')
 const bottomBarBg = computed(() => props.isDark ? 'border-zinc-600 bg-zinc-800' : 'border-[#D2D4D6] bg-[#f8f7f4]')
 const btnGhost = computed(() =>
@@ -58,52 +60,120 @@ const backCls = computed(() =>
 const emergencyNameCls = computed(() => props.isDark ? 'text-zinc-200' : 'text-slate-900')
 const patientInfoCls = computed(() => props.isDark ? 'text-zinc-400' : 'text-slate-500')
 const statusTextCls = computed(() => props.isDark ? 'text-zinc-400' : 'text-slate-600')
-const sectionCountCls = computed(() => props.isDark ? 'text-[11px] text-zinc-500 font-normal' : 'text-[11px] text-slate-400 font-normal')
+const sectionCountCls = computed(() => props.isDark ? 'text-xs text-zinc-500 font-medium' : 'text-xs text-slate-500 font-medium')
+const activeInfoItemId = ref<string | null>(null)
+const hoveredInfoItemId = ref<string | null>(null)
+let closeInfoTimer: ReturnType<typeof setTimeout> | null = null
 
-function sectionAccentCls(title: string): string {
-  const lower = title.toLowerCase()
-  if (lower.includes('immediate') || lower.includes('recognition') || lower.includes('escalation')) {
-    return props.isDark ? 'border-l-[#B68686]' : 'border-l-[#B85A5A]'
-  }
-  if (lower.includes('definitive') || lower.includes('treatment') || lower.includes('mechanical')) {
-    return props.isDark ? 'border-l-[#8EAD95]' : 'border-l-[#3C6F5C]'
-  }
-  if (lower.includes('hemodynamic')) {
-    return props.isDark ? 'border-l-[#8FA7B8]' : 'border-l-[#3A4B6C]'
-  }
-  return props.isDark ? 'border-l-slate-500' : 'border-l-slate-700'
+interface ItemLike {
+  text: string
+  subtext?: string
 }
+
+const ITEM_TEXT_SPLIT_RE = /^(.*?)\s[—-]\s(.+)$/
+
+function splitItemText(raw: string): { main: string, detail: string | null } {
+  const match = raw.match(ITEM_TEXT_SPLIT_RE)
+  if (!match) {
+    return { main: raw.trim(), detail: null }
+  }
+  return {
+    main: match[1].trim(),
+    detail: match[2].trim(),
+  }
+}
+
+function itemMainText(item: ItemLike): string {
+  return splitItemText(item.text).main
+}
+
+function itemDetailText(item: ItemLike): string {
+  if (item.subtext?.trim()) return item.subtext.trim()
+  return splitItemText(item.text).detail ?? ''
+}
+
+function hasItemDetail(item: ItemLike): boolean {
+  return itemDetailText(item).length > 0
+}
+
+function isInfoOpen(id: string): boolean {
+  return activeInfoItemId.value === id
+}
+
+function cancelInfoCloseTimer() {
+  if (!closeInfoTimer) return
+  clearTimeout(closeInfoTimer)
+  closeInfoTimer = null
+}
+
+function handleItemMouseEnter(id: string) {
+  hoveredInfoItemId.value = id
+  cancelInfoCloseTimer()
+}
+
+function handleItemMouseLeave(id: string) {
+  if (hoveredInfoItemId.value === id) {
+    hoveredInfoItemId.value = null
+  }
+  scheduleInfoClose()
+}
+
+function scheduleInfoClose() {
+  cancelInfoCloseTimer()
+  closeInfoTimer = setTimeout(() => {
+    if (hoveredInfoItemId.value === null) {
+      activeInfoItemId.value = null
+    }
+    closeInfoTimer = null
+  }, 500)
+}
+
+function toggleItemInfo(id: string) {
+  cancelInfoCloseTimer()
+  activeInfoItemId.value = activeInfoItemId.value === id ? null : id
+}
+
+function sectionCheckedCount(section: EmergencySection): number {
+  return section.items.filter(item => props.session.checkedItems.has(item.id)).length
+}
+
+onUnmounted(() => {
+  cancelInfoCloseTimer()
+})
 
 function itemRowCls(): string {
   return props.isDark
-    ? 'flex items-start gap-3 px-1 py-2 hover:bg-zinc-700 transition-colors'
-    : 'flex items-start gap-3 px-1 py-2 hover:bg-slate-50 transition-colors'
+    ? 'w-full group relative flex items-stretch overflow-hidden transition-colors duration-100 hover:bg-zinc-700/90'
+    : 'w-full group relative flex items-stretch overflow-hidden transition-colors duration-100 hover:bg-slate-300/60'
 }
 
-const bodySurfaceCls = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#F5F3EE]')
+const bodySurfaceCls = computed(() => props.isDark ? 'bg-zinc-900' : 'bg-[#E8E9E4]')
 const cardSurfaceCls = computed(() =>
   props.isDark
-    ? 'bg-zinc-800 border-zinc-600 shadow-[0_1px_0_rgba(0,0,0,0.35)]'
-    : 'bg-white border-[#D2D4D6]'
+    ? 'bg-zinc-800 border-zinc-600 rounded-md'
+    : 'bg-[#F7F7F3] border-[#D1D4D0] rounded-md'
 )
 const sectionTitleCls = computed(() =>
   props.isDark
-    ? 'text-xs lg:text-sm tracking-[0.22em] font-semibold text-zinc-200 uppercase'
-    : 'text-xs lg:text-sm tracking-[0.22em] font-semibold text-slate-900 uppercase'
+    ? 'checklist-condensed text-xl tracking-[0.03em] font-bold text-zinc-100 uppercase leading-none'
+    : 'checklist-condensed text-xl tracking-[0.03em] font-bold text-black uppercase leading-none'
 )
-const sectionRuleCls = computed(() => props.isDark ? 'border-zinc-600' : 'border-slate-300')
+const sectionRuleCls = computed(() => props.isDark ? 'border-zinc-500' : 'border-black')
+const infoSurfaceBgCls = computed(() => props.isDark ? 'bg-zinc-500/70' : 'bg-slate-300/70')
+const infoIconTextCls = computed(() => props.isDark ? 'text-zinc-100' : 'text-slate-700')
+const slideMainTextCls = computed(() => props.isDark ? 'text-zinc-200' : 'text-slate-800')
+const slideDetailTextCls = computed(() => props.isDark ? 'text-zinc-300' : 'text-slate-600')
 const itemTextCls = computed(() =>
   props.isDark
     ? {
-      checked: 'text-zinc-500 line-through decoration-zinc-500/70 decoration-[1px]',
-      unchecked: 'text-zinc-100',
+      checked: 'checklist-condensed text-zinc-500 font-semibold line-through decoration-zinc-500 decoration-[1px]',
+      unchecked: 'checklist-condensed text-zinc-100 font-semibold',
     }
     : {
-      checked: 'text-slate-400 line-through decoration-slate-400/70 decoration-[1px]',
-      unchecked: 'text-slate-900',
+      checked: 'checklist-condensed text-slate-400 font-semibold line-through decoration-slate-400 decoration-[1px]',
+      unchecked: 'checklist-condensed text-[#111111] font-semibold',
     }
 )
-const itemSubtextCls = computed(() => props.isDark ? 'text-xs lg:text-sm text-zinc-500 mt-0.5' : 'text-xs lg:text-sm text-slate-500 mt-0.5')
 
 const todayStr = computed(() =>
   new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -218,36 +288,35 @@ const todayStr = computed(() =>
     </div>
 
     <!-- Checklist body -->
-    <div :class="['min-h-screen px-2 sm:px-3 md:px-4 xl:px-6 2xl:px-8 pb-6 md:pb-8 flex-1 overflow-y-auto', bodySurfaceCls]">
-      <!-- 2×2 grid -->
+    <div :class="['min-h-screen flex-1 overflow-y-auto lg:overflow-hidden', bodySurfaceCls]">
+      <div class="w-full px-4 sm:px-5 lg:px-7 xl:px-10 2xl:px-12 py-4 xl:py-5 h-full">
       <div
-        class="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mt-3 md:mt-4 w-full"
+        class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 xl:gap-5 h-full"
       >
         <div
           v-for="section in emergency.sections"
           :key="section.title"
           :class="[
-            'border rounded-none px-5 py-5 md:px-6 md:py-5 space-y-4 border-l-[3px]',
+            'border px-4 py-4 xl:px-5 xl:py-5 space-y-3.5 min-h-0',
             cardSurfaceCls,
-            sectionAccentCls(section.title),
           ]"
         >
           <!-- Section header -->
           <div>
-            <div class="flex items-baseline justify-between">
+            <div class="flex items-end justify-between gap-3">
               <div :class="sectionTitleCls">
                 {{ section.title }}
               </div>
-              <span :class="['tabular-nums', sectionCountCls]">
-                {{ section.items.filter(i => session.checkedItems.has(i.id)).length }}/{{ section.items.length }}
+              <span :class="['tabular-nums shrink-0', sectionCountCls]">
+                {{ sectionCheckedCount(section) }}/{{ section.items.length }}
               </span>
             </div>
-            <div :class="['border-b mt-2 mb-4', sectionRuleCls]" />
+            <div :class="['border-b-[3px] mt-1.5 mb-3', sectionRuleCls]" />
           </div>
 
           <!-- Items -->
-          <div class="space-y-4">
-            <button
+          <div class="space-y-1 xl:space-y-1.5">
+            <div
               v-for="item in section.items"
               :key="item.id"
               :class="[
@@ -255,46 +324,80 @@ const todayStr = computed(() =>
                 itemRowCls(),
               ]"
               :data-testid="`checklist-item-${item.id}`"
-              @click="emit('toggleItem', item.id, item.text)"
+              @mouseenter="handleItemMouseEnter(item.id)"
+              @mouseleave="handleItemMouseLeave(item.id)"
             >
-              <div
+              <button
                 :class="[
-                  'h-4 w-4 lg:h-5 lg:w-5 mt-1 flex-shrink-0 flex items-center justify-center rounded-sm border',
-                  session.checkedItems.has(item.id)
-                    ? (isDark ? 'bg-zinc-700 border-zinc-500' : 'bg-slate-100 border-slate-300')
-                    : (isDark ? 'bg-zinc-800 border-zinc-400' : 'bg-white border-slate-500'),
+                  'flex-1 min-w-0 text-left px-1 py-2 xl:py-2.5 transition-all duration-100 ease-out',
+                  isInfoOpen(item.id) ? 'opacity-0 scale-[0.94] origin-top-left' : 'opacity-100 scale-100',
                 ]"
+                @click="emit('toggleItem', item.id, item.text)"
               >
-                <CheckSquare
-                  v-if="session.checkedItems.has(item.id)"
-                  :class="[isDark ? 'text-zinc-400' : 'text-slate-400', 'h-4 w-4 lg:h-5 lg:w-5']"
-                />
-                <Square
-                  v-else
-                  :class="[isDark ? 'text-zinc-500' : 'text-slate-400', 'h-4 w-4 lg:h-5 lg:w-5']"
-                />
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-start gap-2">
+                <div class="flex items-start gap-2 pr-12">
                   <div :class="[
-                    'text-sm md:text-[15px] lg:text-base leading-relaxed',
+                    'text-[1.85rem] leading-[1.03]',
                     session.checkedItems.has(item.id)
                       ? itemTextCls.checked
                       : itemTextCls.unchecked,
                   ]">
-                    {{ item.text }}
+                    {{ itemMainText(item) }}
                   </div>
                 </div>
+              </button>
+
+              <button
+                v-if="hasItemDetail(item)"
+                :class="[
+                  'absolute right-0 inset-y-0 z-20 h-full aspect-square flex items-center justify-center rounded-none transition-all duration-100 ease-out',
+                  infoIconTextCls,
+                  isInfoOpen(item.id)
+                    ? 'bg-transparent'
+                    : infoSurfaceBgCls,
+                  isInfoOpen(item.id)
+                    ? 'opacity-100'
+                    : 'opacity-0 group-hover:opacity-100',
+                ]"
+                title="Show details"
+                @click.stop="toggleItemInfo(item.id)"
+              >
+                <Info :size="15" />
+              </button>
+
+              <div
+                v-if="hasItemDetail(item)"
+                :class="[
+                  'absolute inset-0 z-10 pointer-events-none transition-all duration-100 ease-out',
+                  isInfoOpen(item.id)
+                    ? 'translate-x-0 opacity-100'
+                    : 'translate-x-full opacity-0',
+                ]"
+              >
                 <div
-                  v-if="item.subtext && !session.checkedItems.has(item.id)"
-                  :class="itemSubtextCls"
-                >
-                  {{ item.subtext }}
+                  :class="[
+                    'absolute inset-0',
+                    infoSurfaceBgCls,
+                  ]"
+                />
+                <div class="relative h-full w-full px-3 pr-14 py-1.5 flex flex-col justify-start overflow-hidden">
+                  <div :class="[
+                    'checklist-condensed text-base leading-tight font-semibold truncate',
+                    slideMainTextCls,
+                  ]">
+                    {{ itemMainText(item) }}
+                  </div>
+                  <div :class="[
+                    'text-sm font-normal leading-snug mt-1 line-clamp-2',
+                    slideDetailTextCls,
+                  ]">
+                    {{ itemDetailText(item) }}
+                  </div>
                 </div>
               </div>
-            </button>
+            </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -313,3 +416,9 @@ const todayStr = computed(() =>
     </div>
   </div>
 </template>
+
+<style scoped>
+.checklist-condensed {
+  font-family: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", Arial, sans-serif;
+}
+</style>

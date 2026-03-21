@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Moon, Sun } from 'lucide-vue-next'
 import { EMERGENCIES } from '~/composables/useEmergencies'
 
@@ -25,15 +26,15 @@ const comingSoonBorder = computed(() => props.isDark ? 'border-white/10' : 'bord
 const comingSoonText = computed(() => props.isDark ? 'text-white/25' : 'text-gray-400')
 const comingSoonSub = computed(() => props.isDark ? 'text-white/15' : 'text-gray-300')
 
-function cardBg(_em: typeof EMERGENCIES[0]) {
+function cardBg() {
   return props.isDark
     ? 'bg-zinc-900 shadow-[0_18px_45px_-28px_rgba(0,0,0,0.85)] hover:bg-zinc-800'
     : 'bg-white shadow-[0_18px_40px_-30px_rgba(15,23,42,0.28)] hover:bg-zinc-50'
 }
-function cardBorder(_em: typeof EMERGENCIES[0]) {
+function cardBorder() {
   return props.isDark ? 'border-white/10 hover:border-white/20' : 'border-zinc-200 hover:border-zinc-300'
 }
-function accentText(_em: typeof EMERGENCIES[0]) {
+function accentText() {
   return props.isDark ? 'text-white' : 'text-zinc-900'
 }
 const chevronCls = computed(() =>
@@ -93,13 +94,13 @@ const chevronCls = computed(() =>
             'border-2 transition-all duration-150',
             'hover:scale-[1.02] hover:brightness-[1.03] active:scale-[0.99]',
             'group cursor-pointer',
-            cardBg(em), cardBorder(em),
+            cardBg(), cardBorder(),
           ]"
           :data-testid="`select-emergency-${em.id}`"
           @click="emit('select', em.id)"
         >
           <div class="flex-1 min-w-0">
-            <div :class="['text-xl font-medium tracking-[0.01em] leading-tight', accentText(em)]">
+            <div :class="['text-xl font-medium tracking-[0.01em] leading-tight', accentText()]">
               {{ em.name }}
             </div>
           </div>

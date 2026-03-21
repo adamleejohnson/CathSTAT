@@ -61,7 +61,7 @@ export const EMERGENCIES: EmergencyType[] = [
           { id: 'cp-1', text: 'Recognize perforation — contrast extravasation on cine' },
           { id: 'cp-2', text: 'Call for HELP — announce the emergency to the room' },
           { id: 'cp-3', text: 'Reverse anticoagulation — Protamine for heparin (1mg per 100U)' },
-          { id: 'cp-4', text: 'Balloon inflation — inflate at perforation site to tamponade', subtext: 'Low-pressure prolonged inflation (>5 min)' },
+          { id: 'cp-4', text: 'Balloon inflation — inflate at perforation site to tamponade' },
           { id: 'cp-5', text: 'Stop GPIIb/IIIa inhibitor infusion if running' },
           { id: 'cp-6', text: 'Maintain wire position across perforation site' },
         ],

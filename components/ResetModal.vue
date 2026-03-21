@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { AlertTriangle } from 'lucide-vue-next'
 
 const props = defineProps<{
